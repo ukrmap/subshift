@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+require 'optparse'
+file, from, shift = nil, nil, nil
+OptionParser.new do |opts|
+  opts.banner = 'Usage: syncsrt [options]'
+  opts.on('--file FILE', 'Subtitles *.srt file'){|x| file = x}
+  opts.on('--from TIME', 'Time point from which to shift'){|x| from = x}
+  opts.on('--shift DURATION', 'Time shift in milliseconds'){|x| shift = x.to_i / 1000.0}
+end.parse!
+
+abort('Error: file should have extension .srt') unless File.extname(file) == '.srt'
+abort("No such file #{file}") unless File.file?(file)
+wfile = "#{file[0..-5]}_shifted.srt"
+require 'time'
+FORMAT = '%H:%M:%S,%L'.freeze
+expect = :number
+shifting = false
+
+File.open(wfile, 'w') do |wf|
+  File.open(file, 'r') do |f|
+    f.each_line do |l|
+      line = l.chomp
+      case expect
+      when :number then
+        wf.write(l)
+        next if line.empty?
+        abort("#{l.inspect} is not a number") unless line.to_i.to_s == line.strip
+        expect = :time
+      when :time then
+        m = /^(\d\d:\d\d:\d\d,\d\d\d) --> (\d\d:\d\d:\d\d,\d\d\d)$/.match(line)
+        if m then
+          if shifting || m[1] > from then # shift time.
+            shifting = true
+            t1 = (Time.strptime(m[1], FORMAT) + shift).strftime(FORMAT)
+            t2 = (Time.strptime(m[2], FORMAT) + shift).strftime(FORMAT)
+            wf.puts("#{t1} --> #{t2}")
+          else # do not shift.
+            wf.write(l)
+          end
+        else
+          abort("#{t.inspect} is not a time")
+        end
+        expect = :text
+      when :text then
+        wf.write(l)
+        expect = :number if line.empty?
+      end
+    end
+  end
+end
+
+puts "Shifted file: #{wfile}"
