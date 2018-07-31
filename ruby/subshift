@@ -19,31 +19,30 @@ shifting = false
 File.open(wfile, 'w') do |wf|
   File.open(file, 'r') do |f|
     f.each_line do |l|
-      line = l.chomp
       case expect
       when :number then
         wf.write(l)
-        next if line.empty?
-        abort("#{l.inspect} is not a number") unless line.to_i.to_s == line.strip
+        next if l.empty?
+        abort("#{l.chomp.inspect} is not a number") unless l.to_i.to_s == l.chomp.strip
         expect = :time
       when :time then
-        m = /^(\d\d:\d\d:\d\d,\d\d\d) --> (\d\d:\d\d:\d\d,\d\d\d)$/.match(line)
+        m = /\A(\d\d:\d\d:\d\d,\d\d\d) --> (\d\d:\d\d:\d\d,\d\d\d)(.*)\z/m.match(l)
         if m then
           if shifting || m[1] > from then # shift time.
             shifting = true
             t1 = (Time.strptime(m[1], FORMAT) + shift).strftime(FORMAT)
             t2 = (Time.strptime(m[2], FORMAT) + shift).strftime(FORMAT)
-            wf.puts("#{t1} --> #{t2}")
+            wf.write("#{t1} --> #{t2}#{m[3]}")
           else # do not shift.
             wf.write(l)
           end
         else
-          abort("#{t.inspect} is not a time")
+          abort("#{l.chomp.inspect} is invalid time format")
         end
         expect = :text
       when :text then
         wf.write(l)
-        expect = :number if line.empty?
+        expect = :number if l.chomp.empty?
       end
     end
   end
