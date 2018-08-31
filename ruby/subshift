@@ -8,6 +8,9 @@ OptionParser.new do |opts|
   opts.on('--shift DURATION', 'Time shift in milliseconds'){|x| shift = x.to_i / 1000.0}
 end.parse!
 
+abort('Error: missing argument file') unless file
+abort('Error: missing argument from') unless from
+abort('Error: missing argument shift') unless shift
 abort('Error: file should have extension .srt') unless File.extname(file) == '.srt'
 abort("No such file #{file}") unless File.file?(file)
 wfile = "#{file[0..-5]}_shifted.srt"

@@ -6,7 +6,7 @@ SRT Subtitles Re-synchronise CLI Tool
 
 Copy ruby script into `/usr/local/bin/` and make it executable:
 
-    $ curl https://raw.githubusercontent.com/ukrmap/subshift/master/ruby/subshift>/usr/local/bin/subshift;chmod +x /usr/local/bin/subshift
+    $ curl https://raw.githubusercontent.com/ukrmap/subshift/master/ruby/subshift > /usr/local/bin/subshift;chmod +x /usr/local/bin/subshift
 
 ## Usage
 
