@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'optparse'
+
 file, from, shift = nil, nil, nil
 OptionParser.new do |opts|
   opts.banner = 'Usage: syncsrt [options]'
@@ -25,11 +26,13 @@ File.open(wfile, 'w') do |wf|
       case expect
       when :number then
         wf.write(l)
-        next if l.empty?
-        abort("#{l.chomp.inspect} is not a number") unless l.to_i.to_s == l.chomp.strip
+        next if l.strip.empty?
+        unless l.to_i.to_s == l.chomp.strip
+          abort("#{l.chomp.inspect} is not a number at line #{f.lineno + 1}")
+        end
         expect = :time
       when :time then
-        m = /\A(\d\d:\d\d:\d\d,\d\d\d) --> (\d\d:\d\d:\d\d,\d\d\d)(.*)\z/m.match(l)
+        m = /\A(\d\d:\d\d:\d\d?,\d\d\d?) --> (\d\d:\d\d:\d\d?,\d\d\d?)(.*)\z/m.match(l)
         if m then
           if shifting || m[1] > from then # shift time.
             shifting = true
@@ -40,7 +43,7 @@ File.open(wfile, 'w') do |wf|
             wf.write(l)
           end
         else
-          abort("#{l.chomp.inspect} is invalid time format")
+          abort("#{l.chomp.inspect} is invalid time format at line #{f.lineno + 1}")
         end
         expect = :text
       when :text then
