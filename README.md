@@ -22,3 +22,9 @@ Move all subtitles after 00:09:53 timepoint 10 seconds earlier:
             --file FILE                  Subtitles *.srt file
             --from TIME                  Time point from which to shift
             --shift DURATION             Time shift in milliseconds
+
+## Testing
+
+[Install bats](https://github.com/sstephenson/bats/wiki/Install-Bats-Using-a-Package)
+
+    $ bats ./test/subshift.bats

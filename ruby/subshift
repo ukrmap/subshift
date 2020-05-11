@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
 require 'optparse'
 
 file, from, shift = nil, nil, nil
@@ -16,9 +19,10 @@ abort('Error: file should have extension .srt') unless File.extname(file) == '.s
 abort("No such file #{file}") unless File.file?(file)
 wfile = "#{file[0..-5]}_shifted.srt"
 require 'time'
-FORMAT = '%H:%M:%S,%L'.freeze
+FORMAT = '%H:%M:%S,%L'
 expect = :number
 shifting = false
+BOM = "\xEF\xBB\xBF" # ZERO WIDTH NO-BREAK SPACE
 
 File.open(wfile, 'w') do |wf|
   File.open(file, 'r') do |f|
@@ -27,6 +31,7 @@ File.open(wfile, 'w') do |wf|
       when :number then
         wf.write(l)
         next if l.strip.empty?
+        l.gsub!(BOM, '')
         unless l.to_i.to_s == l.chomp.strip
           abort("#{l.chomp.inspect} is not a number at line #{f.lineno + 1}")
         end
